@@ -1,5 +1,7 @@
 # vidinfer
 
+🇫🇷 [Version française](README.fr.md)
+
 Decode a video, run inference at **10 inferences per second of video**, on **RGB 720×1280** frames, and log
 **performance every 10 inferences**, with results that are **verifiably reproducible**.
 
