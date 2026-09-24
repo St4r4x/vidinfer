@@ -14,8 +14,11 @@ WORKDIR /app
 COPY pyproject.toml uv.lock README.md ./
 RUN --mount=type=cache,target=/root/.cache/uv uv sync --locked --no-dev --no-install-project
 
-# Build fails if the downloaded weights do not match the pinned sha256.
-ADD --checksum=sha256:646f8bc3fe0a656803d95c294f7852321748cb29d13466a1af8862e2db384a1b \
+# Build fails if the downloaded weights do not match the pinned sha256. Remote ADD defaults to mode 600
+# (root only) and --chmod would also apply to an implicitly created parent dir (644 = not traversable):
+# create the dir first so the non-root runtime user can read the weights.
+RUN mkdir -m 755 /opt/weights
+ADD --chmod=644 --checksum=sha256:646f8bc3fe0a656803d95c294f7852321748cb29d13466a1af8862e2db384a1b \
     https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo26s.pt /opt/weights/yolo26s.pt
 
 COPY src ./src
@@ -24,7 +27,7 @@ RUN --mount=type=cache,target=/root/.cache/uv uv sync --locked --no-dev --no-edi
 ARG GIT_COMMIT=unknown
 ENV VIDINFER_GIT_COMMIT=$GIT_COMMIT \
     VIDINFER_WEIGHTS_DIR=/opt/weights \
-    YOLO_CONFIG_DIR=/tmp/ultralytics \
+    YOLO_CONFIG_DIR=/tmp \
     MPLCONFIGDIR=/tmp/matplotlib \
     PATH="/app/.venv/bin:$PATH"
 
