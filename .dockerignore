@@ -1,0 +1,7 @@
+# Allowlist: only what the image needs (keeps Config.html credentials and the 184 MB video out of the context).
+*
+!pyproject.toml
+!uv.lock
+!README.md
+!src/
+**/__pycache__

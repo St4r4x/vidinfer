@@ -1,0 +1,48 @@
+[project]
+name = "vidinfer"
+version = "0.1.0"
+description = "Decode a video, sample it at 10 inferences per second of video, run person/ball detection, log performance."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "av==18.1.0",
+    "numpy==2.5.2",
+    "pillow>=11",
+    "matplotlib>=3.9",
+    "torch==2.9.0",
+    "torchvision==0.24.0",
+    "ultralytics==8.4.161",
+]
+
+[project.scripts]
+vidinfer = "vidinfer.__main__:main"
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+# ponytail: lock only the platform we run on (Linux x86_64 + NVIDIA); add markers to support macOS/ARM.
+environments = ["sys_platform == 'linux' and platform_machine == 'x86_64'"]
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu126" }
+torchvision = { index = "pytorch-cu126" }
+
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

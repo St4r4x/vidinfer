@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.pt
+outputs/
+
+# Never commit: case material and data (Config.html holds an access key; the statement is not ours to redistribute)
+Config.html
+Exercice.pdf
+data/
+
+# Research notes and experiment scratch (1.8 GB of frames/weights): kept local, not part of the deliverable
+docs/
+experiments/
