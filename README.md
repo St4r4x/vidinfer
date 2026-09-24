@@ -19,8 +19,8 @@ Model: person + ball detection (official Ultralytics YOLO26s weights, COCO class
 | GPU | RTX 4050 Laptop, peak 144 MiB allocated |
 | Reproducibility | host run, host re-run and Docker run: **identical** `results_sha256` and `frames_crc32` |
 
-Visuals in `results/reference/viz/`: a performance/detection timeline rebuilt from `run.log`, and 6 annotated frames
-(wide shots, the standings overlay at t=90 s and a close-up at t=170 s as failure cases).
+Visuals in `results/reference/viz/`: a performance/detection timeline rebuilt from `run.log`, and 4 annotated frames
+(wide shots at t=20 s and t=240 s; the standings overlay at t=90 s and a close-up at t=170 s as failure cases).
 
 ![timeline](results/reference/viz/timeline.png)
 
@@ -82,11 +82,13 @@ Reproducibility is **verified, not assumed**: every run ends with two fingerprin
 - `frames_crc32`: CRC of every pixel sent to the model (0.5 ms/frame, timed as its own stage). If results ever differ,
   it tells whether the drift comes from decoding/preprocessing or from the model.
 
+Evidence: `results/reproducibility.log` (start, environment, timing and fingerprint lines of the 3 runs).
+
 | Run | Environment | results_sha256 | frames_crc32 |
 |---|---|---|---|
-| `results/reference` | host venv, Python 3.12.13, glibc 2.43 | `824865c8…a40a9c` | `0fb35010` |
-| `results/rerun` | same host, second run | `824865c8…a40a9c` | `0fb35010` |
-| `results/docker` | Docker image, Python 3.12.14, glibc 2.36 | `824865c8…a40a9c` | `0fb35010` |
+| reference | host venv, Python 3.12.13, glibc 2.43 | `824865c8…a40a9c` | `0fb35010` |
+| re-run | same host, second run | `824865c8…a40a9c` | `0fb35010` |
+| Docker | Docker image, Python 3.12.14, glibc 2.36 | `824865c8…a40a9c` | `0fb35010` |
 
 What is pinned, and where it is recorded:
 
@@ -181,5 +183,5 @@ src/vidinfer/model.py     pinned weights (URL + sha256), detector with the BGR b
 src/vidinfer/__main__.py  CLI, loop, stage timers, logfmt logging, output.jsonl, fingerprints
 src/vidinfer/viz.py       timeline parsed from run.log, annotated frames
 tests/                    sampler, pixels/RGB, model boundary, end to end (synthetic videos)
-results/                  reference run (+ re-run and Docker logs for the reproducibility check)
+results/                  reference run + reproducibility.log (fingerprints of the 3 runs)
 ```

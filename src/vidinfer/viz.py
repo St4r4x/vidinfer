@@ -1,6 +1,6 @@
 """Visualize a finished run from its outputs only: annotated frames + a performance / detection timeline.
 
-    python -m vidinfer.viz OUTPUT_DIR [--video PATH] [--at 20 90 125 170 240 285]
+    python -m vidinfer.viz OUTPUT_DIR [--video PATH] [--at 20 90 170 240]
 
 The timeline is rebuilt by parsing run.log: the performance log is the data source, not a side channel.
 Annotated frames are re-decoded with the same sampler and checked against output.jsonl.
@@ -113,7 +113,7 @@ def main(argv: list[str] | None = None) -> None:
     p = argparse.ArgumentParser(prog="vidinfer.viz", description=__doc__)
     p.add_argument("output_dir", type=Path)
     p.add_argument("--video", type=Path, help="input video (default: the path recorded in output.jsonl)")
-    p.add_argument("--at", type=float, nargs="+", default=[20, 90, 125, 170, 240, 285], help="video times (s)")
+    p.add_argument("--at", type=float, nargs="+", default=[20, 90, 170, 240], help="video times (s)")
     args = p.parse_args(argv)
     header, frames = read_output(args.output_dir)
     viz_dir = args.output_dir / "viz"

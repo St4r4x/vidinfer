@@ -20,8 +20,8 @@ Modèle : détection des personnes et du ballon (poids officiels Ultralytics YOL
 | GPU | RTX 4050 Laptop, pic de 144 Mio alloués |
 | Reproductibilité | run hôte, second run hôte et run Docker : `results_sha256` et `frames_crc32` **identiques** |
 
-Visuels dans `results/reference/viz/` : une frise performance/détections reconstruite depuis `run.log`, et 6 images
-annotées (plans larges, l'incrustation du classement à t=90 s et un gros plan à t=170 s comme cas d'échec).
+Visuels dans `results/reference/viz/` : une frise performance/détections reconstruite depuis `run.log`, et 4 images
+annotées (plans larges à t=20 s et t=240 s ; l'incrustation du classement à t=90 s et un gros plan à t=170 s comme cas d'échec).
 
 ![frise](results/reference/viz/timeline.png)
 
@@ -84,11 +84,13 @@ La reproductibilité est **vérifiée, pas supposée** : chaque run se termine p
 - `frames_crc32` : CRC de tous les pixels envoyés au modèle (0,5 ms/image, chronométré comme une étape à part). Si
   les résultats divergent un jour, elle dit si l'écart vient du décodage/prétraitement ou du modèle.
 
+Preuve : `results/reproducibility.log` (lignes start, environnement, temps et empreintes des 3 runs).
+
 | Run | Environnement | results_sha256 | frames_crc32 |
 |---|---|---|---|
-| `results/reference` | venv hôte, Python 3.12.13, glibc 2.43 | `824865c8…a40a9c` | `0fb35010` |
-| `results/rerun` | même hôte, second run | `824865c8…a40a9c` | `0fb35010` |
-| `results/docker` | image Docker, Python 3.12.14, glibc 2.36 | `824865c8…a40a9c` | `0fb35010` |
+| référence | venv hôte, Python 3.12.13, glibc 2.43 | `824865c8…a40a9c` | `0fb35010` |
+| second run | même hôte, second run | `824865c8…a40a9c` | `0fb35010` |
+| Docker | image Docker, Python 3.12.14, glibc 2.36 | `824865c8…a40a9c` | `0fb35010` |
 
 Ce qui est figé, et où c'est enregistré :
 
@@ -190,5 +192,5 @@ src/vidinfer/model.py     poids figés (URL + sha256), détecteur avec la fronti
 src/vidinfer/__main__.py  CLI, boucle, chronos par étape, logs logfmt, output.jsonl, empreintes
 src/vidinfer/viz.py       frise parsée depuis run.log, images annotées
 tests/                    échantillonnage, pixels/RGB, frontière du modèle, bout en bout (vidéos synthétiques)
-results/                  run de référence (+ logs du second run et du run Docker pour la preuve de reproductibilité)
+results/                  run de référence + reproducibility.log (empreintes des 3 runs)
 ```
