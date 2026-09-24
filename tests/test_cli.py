@@ -4,6 +4,7 @@ import json
 
 from vidinfer import __main__ as cli
 from vidinfer import model as model_lib
+from vidinfer.viz import read_blocks
 
 
 class StubDetector:
@@ -36,7 +37,9 @@ def test_end_to_end_output_and_log(monkeypatch, tmp_path, index_video):
     assert summary["type"] == "summary" and summary["n_inferences"] == summary["expected"] == 100
     assert [f["sample_index"] for f in frames] == list(range(100))
     assert all(abs(f["timestamp_s"] - f["sample_index"] / 10) <= 0.02 + 1e-9 for f in frames)  # half a frame
-    assert log.count("event=block ") == 10  # one performance line per 10 inferences
+    blocks = read_blocks(tmp_path / "out" / "run.log")  # the log is a machine-readable data source
+    assert len(blocks) == 10  # one performance line per 10 inferences
+    assert {"wall_ms", "decode_ms", "preprocess_ms", "inference_ms", "speed", "cpu_util"} <= blocks[0].keys()
     assert "event=timing" in log and "event=fingerprint" in log and "event=video" in log
 
 
