@@ -14,3 +14,20 @@ data/
 docs/
 experiments/
 livrables/
+
+# Credentials, whatever their name (the repository is public)
+.env
+.env.*
+.aws/
+*.pem
+*.key
+
+# Media and archives: input videos and packaged deliverables stay local
+*.mp4
+*.mkv
+*.mov
+*.zip
+
+# Coverage leftovers
+.coverage
+htmlcov/
