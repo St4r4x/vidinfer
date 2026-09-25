@@ -1,18 +1,21 @@
 # run: reference
-2026-09-24 15:07:16.925 INFO    event=start version=0.1.0 git_commit=bac08dc2918960291b8763405acb0e2e10c36f79 argv='data/cut.mp4 --output-dir results/reference'
-2026-09-24 15:07:18.936 INFO    event=environment python=3.12.13 platform=Linux-7.0.0-31-generic-x86_64-with-glibc2.43 torch=2.9.0+cu126 cuda=12.6 cudnn=91002 ultralytics=8.4.161 av=18.1.0 libavcodec=62.28.102 numpy=2.5.2 cpu_count=12 gpu='NVIDIA GeForce RTX 4050 Laptop GPU' gpu_driver=580.178.04
-2026-09-24 15:08:13.676 INFO    event=timing program_wall_s=56.75 setup_s=5.19 model_load_s=0.13 warmup_s=2.70 processing_wall_s=51.56 cpu_s=93.33 inf_per_s=58.18 speed=5.82
-2026-09-24 15:08:13.676 INFO    event=fingerprint results_sha256=824865c892c29d6cd141316330f8809ccbab843fc5aa23aed14e1d36a1c40a9c frames_crc32=0fb35010
+ts=2026-09-25T07:13:53.290Z level=INFO event=start version=0.2.0 git_commit=3600844218a5a90ebe7f3fd4dd482e3ef1dfb772 argv="data/cut.mp4 --output-dir results/reference"
+ts=2026-09-25T07:13:55.235Z level=INFO event=environment python=3.12.13 platform=Linux-7.0.0-34-generic-x86_64-with-glibc2.43 torch=2.9.0+cu126 cuda=12.6 cudnn=91002 ultralytics=8.4.161 av=18.1.0 libavcodec=62.28.102 numpy=2.5.2 cpu_count=12 gpu="NVIDIA GeForce RTX 4050 Laptop GPU" gpu_driver=580.178.04
+ts=2026-09-25T07:14:44.395Z level=INFO event=summary status=complete n_inferences=3000 expected=3000 decoded_frames=7500 declared_frames=7500 decode_errors=0 pts_missing=0 pts_non_monotonic=0 max_sampling_error_ms=20.00 duplicate_samples=0
+ts=2026-09-25T07:14:44.395Z level=INFO event=timing program_wall_s=51.11 setup_s=4.65 model_load_s=0.08 warmup_s=2.51 processing_wall_s=46.46 cpu_s=90.44 inf_per_s=64.58 speed=6.46
+ts=2026-09-25T07:14:44.395Z level=INFO event=fingerprint results_sha256=824865c892c29d6cd141316330f8809ccbab843fc5aa23aed14e1d36a1c40a9c frames_crc32=0fb35010
 
 # run: rerun
-2026-09-24 15:08:28.759 INFO    event=start version=0.1.0 git_commit=bac08dc2918960291b8763405acb0e2e10c36f79 argv='data/cut.mp4 --output-dir outputs/rerun'
-2026-09-24 15:08:30.726 INFO    event=environment python=3.12.13 platform=Linux-7.0.0-31-generic-x86_64-with-glibc2.43 torch=2.9.0+cu126 cuda=12.6 cudnn=91002 ultralytics=8.4.161 av=18.1.0 libavcodec=62.28.102 numpy=2.5.2 cpu_count=12 gpu='NVIDIA GeForce RTX 4050 Laptop GPU' gpu_driver=580.178.04
-2026-09-24 15:09:26.059 INFO    event=timing program_wall_s=57.30 setup_s=4.51 model_load_s=0.08 warmup_s=2.34 processing_wall_s=52.79 cpu_s=94.82 inf_per_s=56.82 speed=5.68
-2026-09-24 15:09:26.059 INFO    event=fingerprint results_sha256=824865c892c29d6cd141316330f8809ccbab843fc5aa23aed14e1d36a1c40a9c frames_crc32=0fb35010
+ts=2026-09-25T07:14:45.937Z level=INFO event=start version=0.2.0 git_commit=3600844218a5a90ebe7f3fd4dd482e3ef1dfb772 argv="data/cut.mp4 --output-dir outputs/rerun"
+ts=2026-09-25T07:14:46.052Z level=INFO event=environment python=3.12.13 platform=Linux-7.0.0-34-generic-x86_64-with-glibc2.43 torch=2.9.0+cu126 cuda=12.6 cudnn=91002 ultralytics=8.4.161 av=18.1.0 libavcodec=62.28.102 numpy=2.5.2 cpu_count=12 gpu="NVIDIA GeForce RTX 4050 Laptop GPU" gpu_driver=580.178.04
+ts=2026-09-25T07:15:36.102Z level=INFO event=summary status=complete n_inferences=3000 expected=3000 decoded_frames=7500 declared_frames=7500 decode_errors=0 pts_missing=0 pts_non_monotonic=0 max_sampling_error_ms=20.00 duplicate_samples=0
+ts=2026-09-25T07:15:36.102Z level=INFO event=timing program_wall_s=50.17 setup_s=3.11 model_load_s=0.09 warmup_s=2.79 processing_wall_s=47.05 cpu_s=92.95 inf_per_s=63.76 speed=6.38
+ts=2026-09-25T07:15:36.103Z level=INFO event=fingerprint results_sha256=824865c892c29d6cd141316330f8809ccbab843fc5aa23aed14e1d36a1c40a9c frames_crc32=0fb35010
 
 # run: docker
-2026-09-24 13:10:38.553 INFO    event=start version=0.1.0 git_commit=bac08dc2918960291b8763405acb0e2e10c36f79 argv='/data/cut.mp4 --output-dir outputs'
-2026-09-24 13:10:40.523 INFO    event=environment python=3.12.14 platform=Linux-7.0.0-31-generic-x86_64-with-glibc2.36 torch=2.9.0+cu126 cuda=12.6 cudnn=91002 ultralytics=8.4.161 av=18.1.0 libavcodec=62.28.102 numpy=2.5.2 cpu_count=12 gpu='NVIDIA GeForce RTX 4050 Laptop GPU' gpu_driver=580.178.04
-2026-09-24 13:11:36.378 INFO    event=timing program_wall_s=57.83 setup_s=5.05 model_load_s=0.11 warmup_s=2.83 processing_wall_s=52.77 cpu_s=95.55 inf_per_s=56.85 speed=5.68
-2026-09-24 13:11:36.379 INFO    event=fingerprint results_sha256=824865c892c29d6cd141316330f8809ccbab843fc5aa23aed14e1d36a1c40a9c frames_crc32=0fb35010
+ts=2026-09-25T07:15:38.842Z level=INFO event=start version=0.2.0 git_commit=3600844 argv=/data/cut.mp4
+ts=2026-09-25T07:15:39.021Z level=INFO event=environment python=3.12.14 platform=Linux-7.0.0-34-generic-x86_64-with-glibc2.36 torch=2.9.0+cu126 cuda=12.6 cudnn=91002 ultralytics=8.4.161 av=18.1.0 libavcodec=62.28.102 numpy=2.5.2 cpu_count=12 gpu="NVIDIA GeForce RTX 4050 Laptop GPU" gpu_driver=580.178.04
+ts=2026-09-25T07:16:30.496Z level=INFO event=summary status=complete n_inferences=3000 expected=3000 decoded_frames=7500 declared_frames=7500 decode_errors=0 pts_missing=0 pts_non_monotonic=0 max_sampling_error_ms=20.00 duplicate_samples=0
+ts=2026-09-25T07:16:30.496Z level=INFO event=timing program_wall_s=51.65 setup_s=3.65 model_load_s=0.13 warmup_s=3.21 processing_wall_s=47.99 cpu_s=96.64 inf_per_s=62.51 speed=6.25
+ts=2026-09-25T07:16:30.496Z level=INFO event=fingerprint results_sha256=824865c892c29d6cd141316330f8809ccbab843fc5aa23aed14e1d36a1c40a9c frames_crc32=0fb35010
 
