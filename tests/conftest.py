@@ -1,5 +1,6 @@
 """Synthetic H.264 test videos: tests never depend on the 184 MB input and run on CPU in seconds."""
 
+import random
 from pathlib import Path
 
 import av
@@ -47,3 +48,20 @@ def red_video(tmp_path: Path) -> Path:
     red = np.zeros((180, 320, 3), np.uint8)
     red[..., 0] = 255
     return write_video(tmp_path / "red.mp4", [red] * 5)
+
+
+@pytest.fixture
+def hd_video(tmp_path: Path) -> Path:
+    """Untagged 1280x720: the HD path of the colour-matrix decision."""
+    return write_video(tmp_path / "hd.mp4", [encode_index(i, 720, 1280) for i in range(10)])
+
+
+@pytest.fixture
+def corrupt_video(index_video: Path) -> Path:
+    """Middle 20 % of the file overwritten (fixed seed): readable header, broken packets."""
+    data = bytearray(index_video.read_bytes())
+    start, end = int(len(data) * 0.4), int(len(data) * 0.6)
+    data[start:end] = random.Random(0).randbytes(end - start)
+    path = index_video.with_name("corrupt.mp4")
+    path.write_bytes(bytes(data))
+    return path

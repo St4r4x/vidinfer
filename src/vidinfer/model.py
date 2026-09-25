@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import logging
 import os
+import tempfile
 import urllib.request
 from pathlib import Path
 
+import cv2
 import numpy as np
 
 # Before importing ultralytics: no telemetry / online checks, never pip-install anything during a run.
@@ -30,7 +32,8 @@ def resolve_weights(model: str) -> tuple[Path, str]:
     """Return (path, sha256) of the weights, downloading pinned ones if needed.
 
     A pinned name whose file does not match its sha256 is refused BEFORE loading (a .pt is a pickle:
-    loading it can execute code). An arbitrary local file is accepted but flagged as unpinned.
+    loading it can execute code): ValueError, i.e. a configuration error, not something to retry.
+    An arbitrary local file is accepted but flagged as unpinned.
     """
     if model not in WEIGHTS:
         path = Path(model)
@@ -45,12 +48,20 @@ def resolve_weights(model: str) -> tuple[Path, str]:
     if not path.is_file():
         path.parent.mkdir(parents=True, exist_ok=True)
         log.info(f"event=download_weights url={url}")
-        tmp = path.with_suffix(".part")
-        urllib.request.urlretrieve(url, tmp)
-        tmp.rename(path)
+        # Unique temp file, checked BEFORE it takes the final name: a failed or concurrent download never
+        # leaves a bad file in the cache.
+        with tempfile.NamedTemporaryFile(dir=path.parent, suffix=".part", delete=False) as tmp:
+            with urllib.request.urlopen(url, timeout=60) as response:
+                while chunk := response.read(1 << 20):
+                    tmp.write(chunk)
+        tmp_path = Path(tmp.name)
+        if (digest := sha256_file(tmp_path)) != expected:
+            tmp_path.unlink()
+            raise ValueError(f"downloaded {url} has sha256 {digest}, expected {expected}")
+        os.replace(tmp_path, path)
     digest = sha256_file(path)
     if digest != expected:
-        raise RuntimeError(f"sha256 mismatch for {path}: got {digest}, expected {expected}")
+        raise ValueError(f"sha256 mismatch for {path}: got {digest}, expected {expected} (delete the file to refetch)")
     return path, digest
 
 
@@ -69,7 +80,8 @@ class Detector:
     def __call__(self, rgb: np.ndarray) -> tuple[list[dict], dict[str, float]]:
         # Ultralytics treats numpy input as BGR (OpenCV convention) and flips it to RGB internally
         # (ultralytics/engine/predictor.py, preprocess). Feeding RGB as-is would silently swap channels.
-        bgr = np.ascontiguousarray(rgb[..., ::-1])
+        # cvtColor: 0.07 ms; np.ascontiguousarray(rgb[..., ::-1]) gives the same pixels in ~5 ms.
+        bgr = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
         result = self.model.predict(bgr, **self.kwargs)[0]
         boxes = result.boxes
         detections = [
@@ -83,7 +95,10 @@ class Detector:
         ]  # .tolist() copies to host, i.e. waits for the GPU
         return detections, result.speed
 
-    def warmup(self, height: int, width: int, n: int = 2) -> None:
-        """First calls pay CUDA context / cuDNN autotuning: keep them out of the measured loop."""
+    def warmup(self, rgb: np.ndarray, n: int = 2) -> None:
+        """First calls pay CUDA context, cuDNN autotuning and a cold NMS: keep them out of the measured loop.
+
+        Use a real frame: on a black one NMS has nothing to do and stays cold (first real frame 60 ms vs 19 ms).
+        """
         for _ in range(n):
-            self(np.zeros((height, width, 3), np.uint8))
+            self(rgb)

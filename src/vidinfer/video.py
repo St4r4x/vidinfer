@@ -37,6 +37,8 @@ def sample_stream[T](items: Iterable[tuple[Fraction, T]], fps: int | Fraction = 
       duplicate the first frame.
     Needs a one-frame lookahead only, so it streams. Targets after the last frame are not emitted.
     """
+    if fps <= 0:
+        raise ValueError(f"fps must be > 0, got {fps}")
     period = 1 / Fraction(fps)
     k, t0, prev = 0, None, None
     for i, (t, payload) in enumerate(items):
@@ -53,8 +55,11 @@ def sample_stream[T](items: Iterable[tuple[Fraction, T]], fps: int | Fraction = 
 def decode(container: av.container.InputContainer, stats: dict[str, int]) -> Iterator[tuple[Fraction, av.VideoFrame]]:
     """Decode EVERY frame of the first video stream (H.264 P-frames depend on the previous ones).
 
-    Corrupt packets are logged, counted and skipped instead of aborting the whole video.
+    Corrupt packets are logged, counted and skipped instead of aborting the whole video. Frames that break the
+    sampler's precondition (a timestamp, strictly increasing) are counted and dropped: the run is then reported
+    as partial rather than silently sampled wrong.
     """
+    last_t = None
     stream = container.streams.video[0]
     stream.thread_type = "AUTO"  # frame + slice threading: measured x2.4 faster than the default
     for packet in container.demux(stream):
@@ -66,8 +71,15 @@ def decode(container: av.container.InputContainer, stats: dict[str, int]) -> Ite
             continue
         for frame in frames:
             stats["decoded_frames"] += 1
-            if frame.pts is not None:  # ponytail: a frame without pts cannot be placed in time; never seen here
-                yield frame.pts * frame.time_base, frame
+            if frame.pts is None:
+                stats["pts_missing"] += 1
+                continue
+            t = frame.pts * frame.time_base
+            if last_t is not None and t <= last_t:
+                stats["pts_non_monotonic"] += 1
+                continue
+            last_t = t
+            yield t, frame
 
 
 def yuv_matrix(color_space: int | None, height: int) -> str:
@@ -102,6 +114,10 @@ def sha256_file(path: Path) -> str:
     return h.hexdigest()
 
 
+def display_aspect_ratio(width: int, height: int, sar: Fraction | None) -> Fraction:
+    return Fraction(width, height) * (Fraction(sar) if sar else 1)
+
+
 def metadata(path: Path) -> dict:
     """Container + video stream metadata (PyAV, no ffprobe subprocess) and the file sha256 for lineage."""
     with av.open(str(path)) as c:
@@ -121,8 +137,13 @@ def metadata(path: Path) -> dict:
             "pix_fmt": cc.pix_fmt,
             "avg_fps": str(v.average_rate),
             "time_base": str(v.time_base),
+            "sar": str(cc.sample_aspect_ratio or "1:1"),
+            "display_aspect_ratio": str(display_aspect_ratio(cc.width, cc.height, cc.sample_aspect_ratio)),
             "start_time_s": float(v.start_time * v.time_base) if v.start_time is not None else None,
-            "duration_s": float(v.duration * v.time_base) if v.duration else c.duration / av.time_base,
+            # Video stream duration first: the container duration may include a longer audio track.
+            "duration_s": float(v.duration * v.time_base)
+            if v.duration
+            else (c.duration / av.time_base if c.duration else None),
             "declared_frames": v.frames,
             "bit_rate": cc.bit_rate,
             "color_space": "unspecified" if cc.colorspace == UNSPECIFIED else cc.colorspace,
