@@ -19,7 +19,8 @@ from vidinfer.video import sha256_file  # noqa: E402
 
 log = logging.getLogger("vidinfer")
 
-# Pinned release (Ultralytics otherwise downloads from the *latest* release: not reproducible).
+# Pinned here rather than left to Ultralytics: its downloader follows the release tied to the library version
+# (v8.4.0 for 8.4.161) and only checks the file size. A sha256 is required before unpickling.
 _RELEASE = "https://github.com/ultralytics/assets/releases/download/v8.4.0"
 WEIGHTS = {
     "yolo26s.pt": (f"{_RELEASE}/yolo26s.pt", "646f8bc3fe0a656803d95c294f7852321748cb29d13466a1af8862e2db384a1b"),

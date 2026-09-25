@@ -95,7 +95,7 @@ not required, not tested or not cheap goes to the roadmap, with the condition th
 | Decoder | OpenCV, ffmpeg pipe, PyAV, torchcodec | PyAV, `thread_type="AUTO"` | exact PTS and colour matrix under control; every H.264 frame must be decoded anyway (P-frames) |
 | Colour matrix | library default / explicit | BT.709 for untagged HD, logged | an assumption (the usual HD convention), made visible: a wrong matrix moves a pure red from G=0 to G=23 (test suite) |
 | Model boundary | pass RGB as-is / convert | `cv2.cvtColor` to BGR at the Ultralytics call only | Ultralytics treats numpy input as BGR (`engine/predictor.py`); RGB as-is is a silent error |
-| Model | YOLO26 n/s/m, imgsz 640/1280, FP16/32 | YOLO26s, imgsz 1280, FP16, conf 0.25 | the ball is 8–16 px at 720p, hence imgsz 1280. s vs m is a **cost** trade-off: on a hand-labelled sample, m found every ball s found plus 3 of 27, for 2.4× the GPU time; the sample is too small to conclude (study measurements, scripts not in this repo). m is one flag away. |
+| Model | YOLO26 n/s/m, imgsz 640/1280, FP16/32 | YOLO26s, imgsz 1280, FP16, conf 0.25 | the ball is 8–16 px at 720p, hence imgsz 1280. s vs m is a **cost** trade-off: on a small sample labelled visually during the study (27 match balls), m found every ball s found plus 3, for 2.4× the GPU time; the sample is too small to conclude (study measurements, scripts not in this repo). m is one flag away. |
 | Loop | producer/consumer threads, batching | synchronous loop | ×6.5 real time already; decoding runs in FFmpeg threads (0.26 ms of waiting per frame) |
 | Output | JSON, CSV, Parquet, COCO, MOT | JSON Lines | streamable, readable after a crash, keeps frames without detection; the summary `status` marks completion |
 
@@ -126,7 +126,10 @@ model. The pixels are reproducible everywhere, the detections within a hardware 
 | Runtime side effects | `YOLO_OFFLINE=1` (no telemetry), `YOLO_AUTOINSTALL=0` (no pip install mid-run) | — |
 | Clean-machine rebuild | CI: `uv sync --locked` + lint + tests on every push | `.github/workflows/ci.yml` |
 
-Ultralytics downloads weights from the *latest* GitHub release by default: this is why the URL is pinned.
+Why pin the weights here: Ultralytics fetches them at run time from the release tied to its own version
+(`v8.4.0` for 8.4.161) and only checks the file size. Pinning the URL and the sha256 verifies integrity before a
+pickle is loaded and keeps the weights version independent of the library version; the Docker image downloads
+nothing at run time.
 
 ## Performance observability
 

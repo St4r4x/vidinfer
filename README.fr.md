@@ -100,7 +100,7 @@ revenir).
 | Décodeur | OpenCV, pipe ffmpeg, PyAV, torchcodec | PyAV, `thread_type="AUTO"` | PTS exacts et matrice couleur maîtrisée ; décoder toutes les images H.264 est de toute façon obligatoire (P-frames) |
 | Matrice couleur | défaut des bibliothèques / explicite | BT.709 pour la HD non déclarée, logué | une hypothèse (la convention HD usuelle), rendue visible : une mauvaise matrice fait passer un rouge pur de G=0 à G=23 (suite de tests) |
 | Frontière du modèle | RGB tel quel / conversion | `cv2.cvtColor` vers BGR uniquement à l'appel Ultralytics | Ultralytics traite un tableau numpy comme du BGR (`engine/predictor.py`) ; passer du RGB est une erreur silencieuse |
-| Modèle | YOLO26 n/s/m, imgsz 640/1280, FP16/32 | YOLO26s, imgsz 1280, FP16, conf 0,25 | le ballon fait 8 à 16 px en 720p, d'où imgsz 1280. s contre m est un arbitrage de **coût** : sur un échantillon étiqueté à la main, m retrouve tous les ballons de s plus 3 sur 27, pour 2,4× plus de temps GPU ; l'échantillon est trop petit pour conclure (mesures de l'étude, scripts hors de ce dépôt). m est à un paramètre près. |
+| Modèle | YOLO26 n/s/m, imgsz 640/1280, FP16/32 | YOLO26s, imgsz 1280, FP16, conf 0,25 | le ballon fait 8 à 16 px en 720p, d'où imgsz 1280. s contre m est un arbitrage de **coût** : sur un petit échantillon étiqueté visuellement pendant l'étude (27 ballons de match), m retrouve tous les ballons de s plus 3, pour 2,4× plus de temps GPU ; l'échantillon est trop petit pour conclure (mesures de l'étude, scripts hors de ce dépôt). m est à un paramètre près. |
 | Boucle | threads producteur/consommateur, batching | boucle synchrone | déjà ×6,5 le temps réel ; le décodage tourne dans les threads FFmpeg (0,26 ms d'attente par image) |
 | Sortie | JSON, CSV, Parquet, COCO, MOT | JSON Lines | streamable, lisible après un crash, garde les images sans détection ; le `status` du résumé marque la complétude |
 
@@ -132,7 +132,10 @@ détections au sein d'une même classe de matériel.
 | Effets de bord à l'exécution | `YOLO_OFFLINE=1` (pas de télémétrie), `YOLO_AUTOINSTALL=0` (aucun pip install en cours de run) | — |
 | Reconstruction sur machine vierge | CI : `uv sync --locked` + lint + tests à chaque push | `.github/workflows/ci.yml` |
 
-Par défaut, Ultralytics télécharge les poids depuis la *dernière* release GitHub : d'où l'URL figée.
+Pourquoi figer les poids ici : Ultralytics les télécharge au moment de l'exécution, depuis la release liée à sa
+propre version (`v8.4.0` pour 8.4.161), et ne vérifie que la taille du fichier. Figer l'URL et le sha256 vérifie
+l'intégrité avant de charger un pickle, et rend la version des poids indépendante de celle de la bibliothèque ;
+l'image Docker ne télécharge rien à l'exécution.
 
 ## Observabilité de la performance
 
