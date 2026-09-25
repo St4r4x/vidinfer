@@ -13,3 +13,6 @@ data/
 # Research notes and experiment scratch (1.8 GB of frames/weights): kept local, not part of the deliverable
 docs/
 experiments/
+
+# Local deliverables package (zip of a repo snapshot), not versioned
+livrables/
