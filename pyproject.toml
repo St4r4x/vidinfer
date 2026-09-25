@@ -1,6 +1,6 @@
 [project]
 name = "vidinfer"
-version = "0.1.0"
+version = "0.2.0"
 description = "Decode a video, sample it at 10 inferences per second of video, run person/ball detection, log performance."
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
