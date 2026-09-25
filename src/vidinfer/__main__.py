@@ -66,14 +66,15 @@ def setup_logging(path: Path) -> None:
 
 
 def git_commit() -> str:
-    """Commit of the running code (+ '-dirty' if tracked files are modified); Docker passes it as an env var."""
+    """Commit of the running code, '-dirty' if src/ or the dependencies differ; Docker passes it as an env var."""
     if commit := os.environ.get("VIDINFER_GIT_COMMIT"):
         return commit
     cwd = Path(__file__).resolve().parent
     try:
         sha = subprocess.run(["git", "rev-parse", "HEAD"], cwd=cwd, capture_output=True, text=True, check=True)
         dirty = subprocess.run(
-            ["git", "status", "--porcelain", "--untracked-files=no"],
+            # Only what makes the code: outputs written into the repo (results/) must not flag it dirty.
+            ["git", "status", "--porcelain", "--untracked-files=no", "--", ":/src", ":/pyproject.toml", ":/uv.lock"],
             cwd=cwd,
             capture_output=True,
             text=True,
