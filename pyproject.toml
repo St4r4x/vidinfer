@@ -25,7 +25,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.uv]
-# ponytail: lock only the platform we run on (Linux x86_64 + NVIDIA); add markers to support macOS/ARM.
+# Lock only the platform this runs on (Linux x86_64 + NVIDIA); add markers to support macOS/ARM.
 environments = ["sys_platform == 'linux' and platform_machine == 'x86_64'"]
 
 [tool.uv.sources]

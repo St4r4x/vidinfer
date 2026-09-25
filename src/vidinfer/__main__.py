@@ -108,7 +108,7 @@ def environment() -> dict:
 
             pynvml.nvmlInit()
             env["gpu_driver"] = pynvml.nvmlSystemGetDriverVersion()
-        except Exception:  # noqa: BLE001  ponytail: driver version is informative only
+        except Exception:  # noqa: BLE001  the driver version is informative only
             env["gpu_driver"] = "unknown"
     return env
 

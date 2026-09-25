@@ -5,14 +5,12 @@ __pycache__/
 *.pt
 outputs/
 
-# Never commit: case material and data (Config.html holds an access key; the statement is not ours to redistribute)
+# Material received with the exercise and the input video (not redistributed)
 Config.html
 Exercice.pdf
 data/
 
-# Research notes and experiment scratch (1.8 GB of frames/weights): kept local, not part of the deliverable
+# Local working files, not part of the deliverable
 docs/
 experiments/
-
-# Local deliverables package (zip of a repo snapshot), not versioned
 livrables/
