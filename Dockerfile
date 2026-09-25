@@ -1,5 +1,6 @@
 # syntax=docker/dockerfile:1.7
-# Reproducible image: base pinned by digest, dependencies from uv.lock, weights verified by sha256 at build time.
+# Reproducible artefact: base pinned by digest, dependencies from uv.lock, weights verified by sha256 at build time.
+# (apt packages are not pinned: build once, then deploy the image by digest.)
 FROM python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e
 
 # opencv-python (pulled by ultralytics) needs libGL/glib at import time.
@@ -11,7 +12,7 @@ ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy UV_PYTHON_DOWNLOADS=never UV_HTTP_TI
 
 WORKDIR /app
 # Dependencies first: this layer is rebuilt only when the lockfile changes.
-COPY pyproject.toml uv.lock README.md ./
+COPY pyproject.toml uv.lock ./
 RUN --mount=type=cache,target=/root/.cache/uv uv sync --locked --no-dev --no-install-project
 
 # Build fails if the downloaded weights do not match the pinned sha256. Remote ADD defaults to mode 600
@@ -21,10 +22,13 @@ RUN mkdir -m 755 /opt/weights
 ADD --chmod=644 --checksum=sha256:646f8bc3fe0a656803d95c294f7852321748cb29d13466a1af8862e2db384a1b \
     https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo26s.pt /opt/weights/yolo26s.pt
 
+COPY README.md ./
 COPY src ./src
 RUN --mount=type=cache,target=/root/.cache/uv uv sync --locked --no-dev --no-editable
 
+# Build with: --build-arg GIT_COMMIT=$(git describe --always --dirty)  (a '-dirty' suffix is visible in every run)
 ARG GIT_COMMIT=unknown
+LABEL org.opencontainers.image.revision=$GIT_COMMIT
 ENV VIDINFER_GIT_COMMIT=$GIT_COMMIT \
     VIDINFER_WEIGHTS_DIR=/opt/weights \
     YOLO_CONFIG_DIR=/tmp \
