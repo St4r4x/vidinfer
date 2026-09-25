@@ -14,8 +14,8 @@ Modèle : détection des personnes et du ballon (poids officiels Ultralytics YOL
 - « Chacune des images » et « 10 inférences par seconde de vidéo » ne tiennent ensemble que pour les images
   **échantillonnées** : 300 s de vidéo → **3 000 inférences**, une ligne de sortie chacune.
 - « Toutes les 10 images » → une ligne par bloc de **10 inférences = 1 s de vidéo**, avec le temps passé dans chaque étape.
-- « Vérifier / garantir le RGB » → RGB **par construction** (un seul appel de conversion) **et vérifié** (contrat de
-  forme et de type sur chaque image).
+- « Vérifier / garantir le RGB » → RGB **par construction** (un seul appel demande du RGB en 1280×720) **et vérifié
+  par un test** sur une couleur connue : l'ordre des canaux ne se lit pas dans un tableau.
 - « 720 (h) × 1280 (l) » → même ratio 16:9 que l'entrée 1920×1080 : redimensionnement sans déformation.
 
 ## Résultats sur `cut.mp4` (run de référence, `results/reference/`, commit `3600844`)
@@ -79,7 +79,7 @@ un dossier de poids sur `VIDINFER_WEIGHTS_DIR`), `--device auto|cuda|cpu`, `--ma
 | Exigence | Implémentation | Preuve |
 |---|---|---|
 | Programme Python prenant `cut.mp4` | `python -m vidinfer VIDEO` | `tests/test_cli.py`, de bout en bout sur des vidéos synthétiques |
-| Redimensionner en 720×1280 | un seul appel swscale : YUV→RGB + redimensionnement `AREA` ; WARNING si l'entrée n'est pas en 16:9 | contrat vérifié sur chaque image |
+| Redimensionner en 720×1280 | un seul appel swscale : YUV→RGB + redimensionnement `AREA` ; WARNING si l'entrée n'est pas en 16:9 | `tests/test_video.py` (720×1280×3 uint8) ; forme vérifiée à l'entrée du modèle |
 | Garantir le RGB | `rgb24` par construction ; HD non déclarée → BT.709 (les bibliothèques appliquent BT.601 par défaut), signalé en WARNING ; BGR uniquement à l'appel Ultralytics | tests : vidéo rouge pur, règle de matrice, BT.709 appliqué sur une vidéo 1280×720 non déclarée, BGR à la frontière du modèle |
 | 10 inférences par seconde de vidéo | image la plus proche de `t0 + k/10`, égalité → image antérieure, fractions exactes | `3000/3000` et écart max de 20 ms dans le résumé ; `test_sampler.py` ; une vidéo dont chaque image porte son numéro dans ses pixels |
 | Loguer le temps toutes les 10 images | une ligne `event=block` toutes les 10 inférences, avec le détail par étape | 300 lignes de bloc dans `run.log`, relues par les tests et par `viz` |
@@ -216,7 +216,7 @@ ligue et par diffuseur servent de signaux de dérive sans labels.
 ## Organisation
 
 ```text
-src/vidinfer/video.py     métadonnées, décodage (+ compteurs d'anomalies d'entrée), échantillonnage au timestamp, conversion RGB + contrat
+src/vidinfer/video.py     métadonnées, décodage (+ compteurs d'anomalies d'entrée), échantillonnage au timestamp, conversion RGB
 src/vidinfer/model.py     poids figés (URL + sha256), détecteur avec la frontière BGR
 src/vidinfer/__main__.py  CLI, boucle, chronos par étape, logs logfmt, output.jsonl, statut et codes de sortie, empreintes
 src/vidinfer/viz.py       frise parsée depuis run.log, images annotées contrôlées contre output.jsonl

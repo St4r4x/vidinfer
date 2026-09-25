@@ -93,15 +93,22 @@ def yuv_matrix(color_space: int | None, height: int) -> str:
 
 
 def to_rgb(frame: av.VideoFrame, height: int, width: int, matrix: str) -> np.ndarray:
-    """YUV -> RGB and resize in a single swscale call (AREA = anti-aliased downscale), then check the contract."""
+    """YUV -> RGB and resize in a single swscale call (AREA = anti-aliased downscale).
+
+    RGB is guaranteed here, by construction: the call itself fixes the output format and shape.
+    """
     rgb = frame.to_ndarray(format="rgb24", width=width, height=height, interpolation="AREA", src_colorspace=matrix)
     check_rgb(rgb, height, width)
     return rgb
 
 
 def check_rgb(rgb: np.ndarray, height: int, width: int) -> None:
-    """The 'verify' half of 'ensure RGB'. Channel ORDER cannot be read from an array: it is guaranteed by
-    construction (rgb24) and covered by a test on a pure-red video."""
+    """Assert the model's input contract (height x width x 3, uint8).
+
+    Not a data check: the shape is requested explicitly, so this can only fail after a code or library change
+    (0.14 us per frame). Channel order cannot be read from an array at all: it is verified by the pure-red video
+    test. What can really change mid-stream is the INPUT (resolution, pixel format, colour tags), not this output.
+    """
     if rgb.shape != (height, width, 3) or rgb.dtype != np.uint8:
         raise ValueError(f"frame contract violated: got {rgb.shape} {rgb.dtype}, expected ({height}, {width}, 3) uint8")
 

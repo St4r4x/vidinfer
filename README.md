@@ -12,7 +12,8 @@ Model: person + ball detection (official Ultralytics YOLO26s weights, COCO class
 - "Each frame" and "10 inferences per second of video" hold together only for the **sampled** frames: 300 s of
   video → **3 000 inferences**, one output line each.
 - "Log every 10 frames" → one line per **10 inferences = 1 s of video**, with the time spent in each stage.
-- "Ensure RGB" → RGB **by construction** (one conversion call) **and checked** (shape/dtype contract on every frame).
+- "Ensure RGB" → RGB **by construction** (one call asks for RGB at 1280×720) **and verified by a test** on a known
+  colour: channel order cannot be read from an array.
 - "720 (h) × 1280 (w)" → same 16:9 ratio as the 1920×1080 input: resize without distortion.
 
 ## Results on `cut.mp4` (reference run, `results/reference/`, commit `3600844`)
@@ -74,7 +75,7 @@ directory on `VIDINFER_WEIGHTS_DIR` for `m`), `--device auto|cuda|cpu`, `--max-f
 | Requirement | Implementation | Proof |
 |---|---|---|
 | Python program taking `cut.mp4` | `python -m vidinfer VIDEO` | `tests/test_cli.py`, end to end on synthetic videos |
-| Resize to 720×1280 | one swscale call: YUV→RGB + `AREA` resize; a WARNING if the input is not 16:9 | contract checked on every frame |
+| Resize to 720×1280 | one swscale call: YUV→RGB + `AREA` resize; a WARNING if the input is not 16:9 | `tests/test_video.py` (720×1280×3 uint8); shape asserted at the model boundary |
 | Ensure RGB | `rgb24` by construction; untagged HD → BT.709 (libraries default to BT.601), logged as WARNING; BGR only at the Ultralytics call | tests: pure-red video, matrix rule, BT.709 applied on an untagged 1280×720 video, BGR at the model boundary |
 | 10 inferences per second of video | nearest frame to `t0 + k/10`, tie → earlier frame, exact fractions | `3000/3000`, max error 20 ms in the summary; `test_sampler.py`; a video whose frame index is written in its pixels |
 | Log time every 10 frames | one `event=block` line per 10 inferences, per-stage breakdown | 300 block lines in `run.log`, parsed back by the tests and by `viz` |
@@ -202,7 +203,7 @@ label-free drift signals.
 ## Layout
 
 ```text
-src/vidinfer/video.py     metadata, decode (+ input anomaly counters), timestamp sampler, RGB conversion + contract
+src/vidinfer/video.py     metadata, decode (+ input anomaly counters), timestamp sampler, RGB conversion
 src/vidinfer/model.py     pinned weights (URL + sha256), detector with the BGR boundary
 src/vidinfer/__main__.py  CLI, loop, stage timers, logfmt logging, output.jsonl, status and exit codes, fingerprints
 src/vidinfer/viz.py       timeline parsed from run.log, annotated frames checked against output.jsonl
